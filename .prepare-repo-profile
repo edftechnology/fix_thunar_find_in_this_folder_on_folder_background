@@ -1,0 +1,5 @@
+[INFO] Select prepare_repo profile:
+  1) app
+  2) app + latex
+  3) latex
+[INFO] Choice [1]: app

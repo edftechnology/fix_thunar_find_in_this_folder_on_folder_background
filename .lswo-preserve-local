@@ -1,0 +1,26 @@
+# Managed by prepare_repo.sh
+# profile: [INFO] Select prepare_repo profile:
+  1) app
+  2) app + latex
+  3) latex
+[INFO] Choice [1]: app
+AGENTS.md
+CHANGES.txt
+CITATION.cff
+CODE_OF_CONDUCT.md
+CONTRIBUTING.md
+DEPENDENCIES.md
+DOI.txt
+LICENSE.txt
+MANIFEST.in
+README.ipynb
+README.md
+requirements.txt
+.gitattributes
+.gitignore
+.github/
+.vscode/
+.gitmodules
+.githooks/
+.codex/
+subs/
