@@ -1,231 +1,183 @@
-# Como instalar/configurar/usar o `bmon` no `Linux Ubuntu`
+# Como configurar/instalar/usar o `Find in this folder` no fundo branco da pasta do `Thunar` no `Linux Ubuntu`
 
 ## Resumo
 
-Guia direto para instalar o `bmon` no `Linux Ubuntu` pelo `Terminal Emulator`, com um caminho principal via `apt` e um caminho alternativo por compilação do código-fonte.
+Neste documento estão contidos os principais comandos e configurações para corrigir a ação `Find in this folder` no `Thunar`, fazendo com que ela também apareça ao clicar com o botão direito no fundo branco da pasta no `Linux Ubuntu`.
 
 ## _Abstract_
 
-_A straightforward guide to install `bmon` on `Linux Ubuntu` through the `Terminal Emulator`, with a primary `apt`-based path and an optional source-build path._
+_This document contains the main commands and settings to fix the `Find in this folder` action in `Thunar`, making it appear when right-clicking on the blank area of the current folder in `Linux Ubuntu`._
 
 
-## Descrição
+## Descrição [2]
 
-### `bmon`
+### `shell`
 
-O `bmon` é uma ferramenta de linha de comando para monitorar largura de banda e estatísticas de rede em tempo real. Ele oferece interface interativa baseada em `ncurses` e também modos de saída em texto, úteis para depuração, observabilidade e automação.
+Um `shell` é uma interface de linha de comando que permite aos usuários interagir com um sistema operacional por meio de comandos de texto. Ele atua como uma camada intermediária entre o usuário e o núcleo do sistema, facilitando a execução de programas, manipulação de arquivos e configuração do sistema. Os exemplos incluem o `Bash`, `Zsh` e `PowerShell`.
+
+### `thunar`
+
+`Thunar` é um gerenciador de arquivos leve e eficiente projetado para ambientes de desktop baseados no `Xfce`. Ele suporta ações personalizadas no menu de contexto, permitindo adicionar comandos que aparecem conforme o tipo de seleção e o contexto da pasta atual.
+
+### `catfish`
+
+`Catfish` é uma ferramenta gráfica de busca de arquivos do ecossistema `Xfce`. Neste ajuste, ele é usado como comando da ação personalizada `Find in this folder`, limitando a pesquisa ao diretório atual aberto no `Thunar`.
 
 
-## Pré-requisitos
+## 1. Como configurar/instalar/usar o `Find in this folder` no fundo branco da pasta do `Thunar` no `Linux Ubuntu` [1]
 
-- Permissão para usar `sudo`
-- Repositórios `ubuntu` habilitados, preferencialmente incluindo `universe`
-- Conexão com a internet para instalar pacotes
-- `apt` funcional no sistema
-
-
-## 1. Abrir o `Terminal Emulator`
+Para configurar/instalar/usar o `Find in this folder` no fundo branco da pasta do `Thunar` no `Linux Ubuntu`, você pode seguir estes passos:
 
 1. Abrir o `Terminal Emulator`. Você pode fazer isso pressionando:
 
-```bash
-Ctrl + Alt + T
-```
+    ```bash
+    Ctrl + Alt + T
+    ```
 
 
 2. Certifique-se de que seu sistema esteja limpo e atualizado.
 
     2.1 Limpar o `cache` do gerenciador de pacotes `apt`. Especificamente, ele remove todos os arquivos de pacotes (`.deb`) baixados pelo `apt` e armazenados em `/var/cache/apt/archives/`. Digite o seguinte comando:
-        
     ```bash
     sudo apt clean
     ```
 
     2.2 Remover pacotes `.deb` antigos ou duplicados do `cache` local. É útil para liberar espaço, pois remove apenas os pacotes que não podem mais ser baixados (ou seja, versões antigas de pacotes que foram atualizados). Digite o seguinte comando:
-
     ```bash
     sudo apt autoclean
     ```
 
     2.3 Remover pacotes que foram automaticamente instalados para satisfazer as dependências de outros pacotes e que não são mais necessários. Digite o seguinte comando:
-
     ```bash
     sudo apt autoremove -y
     ```
 
     2.4 Buscar as atualizações disponíveis para os pacotes que estão instalados em seu sistema. Digite o seguinte comando e pressione `Enter`:
-
     ```bash
     sudo apt update
     ```
 
     2.5 **Corrigir pacotes quebrados**: Isso atualizará a lista de pacotes disponíveis e tentará corrigir pacotes quebrados ou com dependências ausentes:
-
     ```bash
     sudo apt --fix-broken install
     ```
 
     2.6 Limpar o `cache` do gerenciador de pacotes `apt` novamente:
-
     ```bash
     sudo apt clean
     ```
 
     2.7 Para ver a lista de pacotes a serem atualizados, digite o seguinte comando e pressione `Enter`:
-
     ```bash
     sudo apt list --upgradable
     ```
 
     2.8 Realmente atualizar os pacotes instalados para as suas versões mais recentes, com base na última vez que você executou `sudo apt update`. Digite o seguinte comando e pressione `Enter`:
-
     ```bash
     sudo apt full-upgrade -y
     ```
 
 
-## 3. Instalar o `bmon` via `apt`
+## 1.1 Código completo para configurar/instalar/usar
 
-Na maioria dos casos, a forma mais simples e portátil de instalar o `bmon` no `Ubuntu` é usar o pacote disponível nos repositórios da distribuição.
+Para configurar/instalar/usar o `Find in this folder` no `Linux Ubuntu` sem precisar digitar linha por linha, você pode seguir estas etapas:
 
-1. Garantir que o repositório `universe` esteja habilitado:
+1. Abrir o `Terminal Emulator`. Você pode fazer isso pressionando:
 
     ```bash
-    sudo add-apt-repository universe
-    sudo apt update
+    Ctrl + Alt + T
     ```
 
-2. Instalar o `bmon`:
+2. Digite o seguinte comando e pressione `Enter`:
 
     ```bash
-    sudo apt install -y bmon
-    ```
+    sudo apt install -y catfish
+    mkdir -p "$HOME/.config/Thunar"
+    python3 - <<'PY'
+    from pathlib import Path
+    import xml.etree.ElementTree as ET
 
-3. Confirmar que o binário foi instalado corretamente:
+    uca_path = Path.home() / ".config/Thunar/uca.xml"
+    if uca_path.exists():
+        root = ET.fromstring(uca_path.read_text(encoding="utf-8"))
+    else:
+        root = ET.Element("actions")
 
-    ```bash
-    bmon --help
-    ```
+    target_name = "Find in this folder"
+    target_command = 'catfish --path="%f"'
 
+    def next_unique_id(actions_root):
+        existing = {action.findtext("unique-id", "") for action in actions_root.findall("action")}
+        for index in range(1, 1000):
+            candidate = f"{index}-{index}"
+            if candidate not in existing:
+                return candidate
+        return "1000-1000"
 
-## 4. Executar o `bmon`
+    selected_action = None
+    for action in root.findall("action"):
+        if action.findtext("name", "") == target_name or action.findtext("command", "") == target_command:
+            selected_action = action
+            break
 
-1. Depois da instalação, você pode iniciar o monitoramento com o comando:
+    unique_id = selected_action.findtext("unique-id", "") if selected_action is not None else next_unique_id(root)
 
-    ```bash
-    bmon
-    ```
+    if selected_action is None:
+        selected_action = ET.SubElement(root, "action")
+    else:
+        for child in list(selected_action):
+            selected_action.remove(child)
 
-2. Se quiser monitorar uma _interface_ específica, como `eth0`, use:
+    for tag, value in (
+        ("icon", "system-search"),
+        ("name", target_name),
+        ("unique-id", unique_id),
+        ("command", target_command),
+        ("description", "Search for files in the current folder"),
+        ("patterns", "*"),
+    ):
+        element = ET.SubElement(selected_action, tag)
+        element.text = value
 
-    ```bash
-    bmon -p eth0
-    ```
+    ET.SubElement(selected_action, "startup-notify")
+    ET.SubElement(selected_action, "directories")
 
-3. Para listar opções disponíveis e modos de saída:
-
-    ```bash
-    bmon --help
-    ```
-
-
-## 5. (Opcional) Instalar o `bmon` compilando o código-fonte
-
-Esse caminho é útil quando você precisa seguir as instruções do projeto upstream ou quer compilar manualmente a ferramenta.
-
-1. Instalar as dependências de compilação:
-
-    ```bash
-    sudo apt install -y \
-        git \
-        build-essential \
-        make \
-        pkg-config \
-        dh-autoreconf \
-        libconfuse-dev \
-        libnl-3-dev \
-        libnl-route-3-dev \
-        libncurses-dev
-    ```
-
-2. Clonar o repositório oficial:
-
-    ```bash
-    git clone https://github.com/tgraf/bmon.git
-    cd bmon
-    ```
-
-3. Gerar os arquivos de configuração, compilar e instalar:
-
-    ```bash
-    ./autogen.sh
-    ./configure
-    make
-    sudo make install
-    ```
-
-4. Testar a instalação:
-
-    ```bash
-    bmon
+    ET.indent(root, space="\t")
+    xml_content = ET.tostring(root, encoding="unicode")
+    uca_path.write_text('<?xml version="1.0" encoding="UTF-8"?>\n' + xml_content, encoding="utf-8")
+    PY
+    thunar -q 2>/dev/null || true
     ```
 
 
-## 2. Como ver o `bmon` mostrando sua velocidade real
+## 2. Como corrigir manualmente no `Thunar`
 
-1. Abra dois terminais.
+Se você preferir ajustar pela interface gráfica, configure a ação personalizada abaixo em `Edit` > `Configure custom actions...`:
 
-    - **`Terminal 1`**:
+1. Clique em `+` para criar uma nova ação.
 
-    ```bash
-    bmon -p wlp2s0
-    ```
+2. Preencha os campos principais com os seguintes valores:
 
-    ou
+    **Nome:** `Find in this folder`
 
-    ```bash
-    bmon -p enp0s31f6
-    ```
+    **Descrição:** `Search for files in the current folder`
 
-    - **`Terminal 2`**: Baixe algo grande:
+    **Comando:** `catfish --path="%f"`
 
-    ```bash
-    wget http://speedtest.tele2.net/100MB.zip
-    ```
+    **Ícone:** `system-search`
 
-    ou
+3. Na aba de condições de aparência, marque apenas `Diretórios`.
 
-    ```bash
-    curl -O http://speedtest.tele2.net/100MB.zip
-    ```
+4. Salve a ação personalizada e feche o `Thunar`.
 
-    Agora o `bmon` vai mostrar algo como:
-
-    ```bash
-    RX: 20 MB/s
-    ```
-
-## Compatibilidade
-
-- O pacote `bmon` está disponível nos repositórios do `Ubuntu`, inclusive em ambientes baseados em `Jammy`.
-- O método via `apt` é o mais indicado para instalações comuns no `Linux Ubuntu`.
-- A compilação manual é uma alternativa quando você precisa seguir o _upstream_ ou validar dependências de desenvolvimento.
-
-
-## Licença
-
-Este repositório inclui o arquivo `LICENSE.txt`.
-
-## Contato e suporte
-
-Para dúvidas ou problemas, consulte o repositório oficial do `bmon` e a documentação da sua versão do `Linux Ubuntu`.
+5. Abra o `Thunar` novamente e clique com o botão direito no fundo branco de uma pasta para validar se `Find in this folder` passou a aparecer no menu de contexto.
 
 
 ## Referências
 
-[1] OPENAI. ***Instalar o `bmon` no `linux ubuntu` pelo `terminal emulator`***. Disponível em: <https://chatgpt.com/c/69b700b3-b03c-8326-84e4-309f7e577240>. ChatGPT. Acessado em: 15/03/2026.
+[1] OPENAI. **Corrigir o `find in this folder` do `thunar` no fundo branco da pasta**. Disponível em: <https://chatgpt.com/g/g-p-6980caf949648191ad6acfcdbe590f9e-instalar/c/69eab10f-0054-83e9-b421-4d5456cae9fc>. ChatGPT. Acessado em: 23/04/2026.
 
-[2] TGRAF. ***bmon - Bandwidth Monitor***. Disponível em: <https://github.com/tgraf/bmon>. Acessado em: 15/03/2026.
+[2] XFCE DEVELOPMENT TEAM. **Thunar - custom actions**. Disponível em: <https://docs.xfce.org/xfce/thunar/custom-actions>. Acessado em: 23/04/2026.
 
-[3] UBUNTU DEVELOPERS. ***Package: bmon***. Disponível no metadado do pacote `apt` do `Ubuntu` e na página do pacote mantida pelo projeto `Linux Ubuntu`. Acessado em: 15/03/2026.
+[3] XFCE DEVELOPMENT TEAM. **Catfish - introduction**. Disponível em: <https://docs.xfce.org/apps/catfish/introduction>. Acessado em: 23/04/2026.
 
